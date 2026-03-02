@@ -2,6 +2,10 @@
 
 A browser-based REPL for [Svelte 5](https://svelte.dev/) that runs entirely in the browser — no server, no bundler required.
 
+## Live Demo
+
+[**→ Open Live Demo**](https://rozek.github.io/svelte-repl/Demo.html)
+
 ## Overview
 
 **svelte-repl** provides an interactive editor for Svelte 5 components with live preview and console output. The Svelte compiler runs directly in the browser, making the REPL completely self-contained and deployable as static HTML — no backend, no build step at runtime.
