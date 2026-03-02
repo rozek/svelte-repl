@@ -1,68 +1,85 @@
-<script>
-  import { onMount, onDestroy } from 'svelte';
-  import loader from '@monaco-editor/loader';
-  
-  export let Value = '';
-  
-  let EditorContainer;
-  let Editor;
-  let Monaco;
-        
+<script lang="ts">
+/*******************************************************************************
+*                                                                              *
+*                           MonacoEditor.svelte                               *
+*                                                                              *
+*******************************************************************************/
+
+  import { onMount, onDestroy } from 'svelte'
+  import loader                 from '@monaco-editor/loader'
+  import type * as Monaco       from 'monaco-editor'
+
+  let { Value = $bindable(''), WordWrap = 'on' }: {
+    Value:string; WordWrap?:'on'|'off'
+  } = $props()
+
+  let EditorContainer:HTMLDivElement
+  let Editor:Monaco.editor.IStandaloneCodeEditor|undefined
+  let MonacoInstance:typeof Monaco|undefined
+  let ignoreChange = false  // guard against feedback loop
+
 /**** onMount ****/
 
   onMount(async () => {
     try {
-      Monaco = await loader.init();
-      
-      Editor = Monaco.editor.create(EditorContainer, {
-        value: Value,
-        language: 'html',
-        theme: 'vs-dark',
-        automaticLayout: true,
-        minimap: { enabled: false },
-        fontSize: 14,
-        lineNumbers: 'on',
-        roundedSelection: false,
-        scrollBeyondLastLine: false,
-        readOnly: false,
-        wordWrap: 'on',
-        folding: true,
-        lineDecorationsWidth: 5,
-        lineNumbersMinChars: 3,
-        renderLineHighlight: 'all',
-        scrollbar: {
-          verticalScrollbarSize: 10,
-          horizontalScrollbarSize: 10
-        }
-      });
-      
-      Editor.onDidChangeModelContent(() => {
-        Value = Editor.getValue();
-      });
-      
-    /**** shortcut for code saving (Ctrl+S / Cmd+S) ****/
+      if (EditorContainer == null) { return }
+      MonacoInstance = await loader.init()
 
-      Editor.addCommand(Monaco.KeyMod.CtrlCmd | Monaco.KeyCode.KeyS, () => undefined);
+      Editor = MonacoInstance.editor.create(EditorContainer, {
+        value:Value,
+        language:'html',
+        theme:'vs-dark',
+        automaticLayout:true,
+        minimap:{ enabled:false },
+        fontSize:14,
+        lineNumbers:'on',
+        roundedSelection:false,
+        scrollBeyondLastLine:false,
+        readOnly:false,
+        wordWrap:WordWrap,
+        folding:true,
+        lineDecorationsWidth:5,
+        lineNumbersMinChars:3,
+        renderLineHighlight:'all',
+        scrollbar:{ verticalScrollbarSize:10, horizontalScrollbarSize:10 },
+      })
+
+      Editor.onDidChangeModelContent(() => {
+        if (! ignoreChange) { Value = Editor!.getValue() }
+      })
+
+      // Swallow Ctrl+S / Cmd+S — saving happens reactively via the store
+      Editor.addCommand(
+        MonacoInstance.KeyMod.CtrlCmd | MonacoInstance.KeyCode.KeyS,
+        () => undefined)
     } catch (Signal) {
-      console.error('Error loading Monaco Editor:', Signal);
+      console.error('Error loading Monaco Editor:', Signal)
     }
-  });
-        
+  })
+
 /**** onDestroy ****/
 
-  onDestroy(() => {
-    if (Editor != null) {
-      Editor.dispose();
+  onDestroy(() => { Editor?.dispose() })
+
+/**** sync external Value changes into the editor ****/
+
+  $effect(() => {
+    const incoming = Value
+    if ((Editor != null) && (incoming !== Editor.getValue())) {
+      const Position = Editor.getPosition()
+      ignoreChange = true
+      Editor.setValue(incoming)
+      ignoreChange = false
+      if (Position != null) { Editor.setPosition(Position) }
     }
-  });
-  
-  $: if ((Editor != null) && (Value !== Editor.getValue())) {
-    const Position = Editor.getPosition();
-    Editor.setValue(Value);
-    if (Position != null) {
-      Editor.setPosition(Position);
-    }
-  }
+  })
+
+/**** sync WordWrap changes ****/
+
+  $effect(() => {
+    const Wrap = WordWrap
+    if (Editor != null) { Editor.updateOptions({ wordWrap:Wrap }) }
+  })
 </script>
 
 <div class="editor-wrapper">
@@ -70,14 +87,6 @@
 </div>
 
 <style>
-  .editor-wrapper {
-    width: 100%;
-    height: 100%;
-    position: relative;
-  }
-  
-  .editor-container {
-    width: 100%;
-    height: 100%;
-  }
+  .editor-wrapper   { width: 100%; height: 100%; position: relative; }
+  .editor-container { width: 100%; height: 100%; }
 </style>
