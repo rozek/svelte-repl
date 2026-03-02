@@ -111,19 +111,55 @@
         .forEach(function (Key) { localStorage.removeItem(Key) })
     }
 
+    async function TextToBase64URL (Text) {
+      const Stream     = new Blob([Text]).stream().pipeThrough(new CompressionStream('deflate-raw'))
+      const Compressed = await new Response(Stream).arrayBuffer()
+      const Bytes      = new Uint8Array(Compressed)
+      let Binary = ''
+      for (let i = 0; i < Bytes.length; i++) {
+        Binary += String.fromCharCode(Bytes[i])
+      }
+      return btoa(Binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+    }
+
+    function readCurrentCode () {
+      // backup mode: code is already in localStorage
+      let Saved = localStorage.getItem(BackupPrefix + '-' + Name)
+      if (Saved != null) { return Saved }
+      // no-backup mode: read from Monaco editor in the iframe (same origin)
+      try {
+        let Models = Frame.contentWindow?.monaco?.editor?.getModels()
+        if (Models && Models.length > 0) { return Models[0].getValue() }
+      } catch (e) {}
+      return null
+    }
+
     // restore consent state and set iframe URL on page load
     let hasConsent   = localStorage.getItem(ConsentKey) === '1'
     Checkbox.checked = hasConsent
     Frame.src        = URLforREPL(hasConsent)
 
-    Checkbox.addEventListener('change', function () {
+    Checkbox.addEventListener('change', async function () {
       if (Checkbox.checked) {
+        // enabling backup — save current code to backup key so REPL picks it up
+        let CurrentCode = readCurrentCode()
+        if (CurrentCode != null) {
+          localStorage.setItem(BackupPrefix + '-' + Name, CurrentCode)
+        }
         localStorage.setItem(ConsentKey, '1')
+        Frame.src = URLforREPL(true)
       } else {
+        // revoking consent — read code before clearing, pass as initial-code on reload
+        let CurrentCode = localStorage.getItem(BackupPrefix + '-' + Name)
         clearBackupData()
         localStorage.removeItem(ConsentKey)
+        if (CurrentCode != null) {
+          let Encoded = await TextToBase64URL(CurrentCode)
+          Frame.src = './index.html?initial-code=' + Encoded
+        } else {
+          Frame.src = URLforREPL(false)
+        }
       }
-      Frame.src = URLforREPL(Checkbox.checked)
     })
   </script>
 </body>
