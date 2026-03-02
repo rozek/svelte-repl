@@ -48,6 +48,12 @@ function copyRuntimeAssets () {
           console.log(`✓  copied ${File} → dist/assets/${File}`)
         }
       })
+
+      const DemoSource = resolve(__dirname, 'Demo.html')
+      if (existsSync(DemoSource)) {
+        copyFileSync(DemoSource, resolve(__dirname, 'dist', 'Demo.html'))
+        console.log(`✓  copied Demo.html → dist/Demo.html`)
+      }
     },
   }
 }
@@ -65,12 +71,6 @@ export default defineConfig({
   build: {
     outDir:      'dist',
     emptyOutDir: true,
-    rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'index.html'),
-        demo: resolve(__dirname, 'Demo.html'),
-      },
-    },
   },
 
   optimizeDeps: {

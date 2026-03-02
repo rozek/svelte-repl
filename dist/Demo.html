@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Svelte REPL — Live Demo</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    html, body {
+      width:100%; height:100%;
+      font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background:#1e1e1e;
+      color:#cccccc;
+      display:flex;
+      flex-direction:column;
+    }
+
+    header {
+      padding:14px 20px;
+      background:#252526;
+      border-bottom:1px solid #3e3e42;
+      flex-shrink:0;
+      display:flex;
+      flex-wrap:wrap;
+      align-items:baseline;
+      gap:12px 32px;
+    }
+
+    .header-description {
+      font-size:13px;
+      color:#aaaaaa;
+      line-height:1.5;
+    }
+
+    .consent-area {
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      margin-left:auto;
+    }
+
+    .consent-label {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:13px;
+      cursor:pointer;
+      user-select:none;
+      color:#cccccc;
+    }
+
+    .consent-label input[type="checkbox"] {
+      accent-color:#ff3e00;
+      width:14px; height:14px;
+      cursor:pointer;
+      flex-shrink:0;
+    }
+
+    .consent-warning {
+      font-size:12px;
+      color:#ddb44b;
+      padding-left:22px;
+    }
+
+    iframe {
+      flex:1;
+      border:none;
+      width:100%;
+      display:block;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="header-description">
+      Write and run Svelte 5 components directly in your browser — no installation required.<br />
+      The Svelte compiler runs entirely client-side; no code is ever sent to a server.
+    </p>
+    <div class="consent-area">
+      <label class="consent-label">
+        <input type="checkbox" id="consent" />
+        Yes, I agree that my code inputs are stored in this browser.
+      </label>
+      <p class="consent-warning">
+        <strong>Warning: revoking consent will delete all previously stored inputs!</strong>
+      </p>
+    </div>
+  </header>
+
+  <iframe id="repl" title="Svelte REPL"></iframe>
+
+  <script>
+    const ConsentKey   = 'svelte-live.consent'
+    const BackupPrefix = 'svelte-live'
+    const Name         = 'demo'
+
+    let Checkbox = document.getElementById('consent')
+    let Frame    = document.getElementById('repl')
+
+    function URLforREPL (withBackup) {
+      return withBackup
+        ? './index.html?backup-prefix=' + BackupPrefix + '&name=' + Name
+        : './index.html'
+    }
+
+    function clearBackupData () {
+      let Prefix = BackupPrefix + '-'
+      Object.keys(localStorage)
+        .filter (function (Key) { return Key.startsWith(Prefix) })
+        .forEach(function (Key) { localStorage.removeItem(Key) })
+    }
+
+    // restore consent state and set iframe URL on page load
+    let hasConsent   = localStorage.getItem(ConsentKey) === '1'
+    Checkbox.checked = hasConsent
+    Frame.src        = URLforREPL(hasConsent)
+
+    Checkbox.addEventListener('change', function () {
+      if (Checkbox.checked) {
+        localStorage.setItem(ConsentKey, '1')
+      } else {
+        clearBackupData()
+        localStorage.removeItem(ConsentKey)
+      }
+      Frame.src = URLforREPL(Checkbox.checked)
+    })
+  </script>
+</body>
+</html>
