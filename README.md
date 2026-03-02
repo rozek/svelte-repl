@@ -2,8 +2,6 @@
 
 A browser-based REPL for [Svelte 5](https://svelte.dev/) that runs entirely in the browser — no server, no bundler required.
 
-> **(work-in-progress - please ignore for the moment)**
-
 ## Live Demo
 
 [**→ Open Live Demo**](https://rozek.github.io/svelte-repl/Demo.html)
