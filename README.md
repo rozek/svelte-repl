@@ -6,6 +6,8 @@ A browser-based REPL for [Svelte 5](https://svelte.dev/) that runs entirely in t
 
 **svelte-repl** provides an interactive editor for Svelte 5 components with live preview and console output. The Svelte compiler runs directly in the browser, making the REPL completely self-contained and deployable as static HTML — no backend, no build step at runtime.
 
+I originally built svelte-repl to give my students a possibility to tinker around with Svelte 5 in their browsers - GDPR-compliant and without having to install anything. But, perhaps, other people may find this little tool useful as well.
+
 ## Features
 
 - **Monaco Editor** — the same editor as VS Code, with syntax highlighting for Svelte/HTML/CSS/JS
@@ -24,7 +26,7 @@ The REPL runs Svelte 5 in **runes mode** without a bundler. Only Svelte 5 syntax
 - `createEventDispatcher`  → callback props 
 - `beforeUpdate` / `afterUpdate`  → `$effect` 
 
-> **Rule of thumb:** Replace every `on:eventname` with `oneventname` (remove the colon). Everything else — transitions, `{#if}`, `{#each}`, `{#await}`, `bind:value`, `bind:this` — remains unchanged.
+> **Rule of thumb:** replace every `on:eventname` with `oneventname` (remove the colon). Everything else — transitions, `{#if}`, `{#each}`, `{#await}`, `bind:value`, `bind:this` — remains unchanged.
 
 The following Svelte packages are available in user code (all bundled into `svelte-runtime.js`):
 
@@ -76,7 +78,7 @@ https://example.com/repl/?initial-code=<encoded-svelte-code>
 
 ### Optional localStorage Backup
 
-When `backup-prefix` is set, the editor content is automatically saved to and restored from `localStorage['{backup-prefix}-{name}']`.
+When `backup-prefix` is set, the editor content is automatically saved to and restored from `localStorage['{backup-prefix}-{name}']`. _This switch had to be provided because of the GDPR_
 
 Example:
 
