@@ -2,6 +2,8 @@
 
 A browser-based REPL for [Svelte 5](https://svelte.dev/) that runs entirely in the browser — no server, no bundler required.
 
+> **(work-in-progress - please ignore for the moment)**
+
 ## Live Demo
 
 [**→ Open Live Demo**](https://rozek.github.io/svelte-repl/Demo.html)
@@ -25,10 +27,10 @@ I originally built svelte-repl to give my students a possibility to tinker aroun
 
 The REPL runs Svelte 5 in **runes mode** without a bundler. Only Svelte 5 syntax is supported. The most important difference from Svelte 4 is event handling:
 
-- `on:click={handler}`  → `onclick={handler}` 
-- `on:input`, `on:focus`, `on:blur`, …  → `oninput`, `onfocus`, `onblur`, … 
-- `createEventDispatcher`  → callback props 
-- `beforeUpdate` / `afterUpdate`  → `$effect` 
+- `on:click={handler}`  → `onclick={handler}`
+- `on:input`, `on:focus`, `on:blur`, …  → `oninput`, `onfocus`, `onblur`, …
+- `createEventDispatcher`  → callback props
+- `beforeUpdate` / `afterUpdate`  → `$effect`
 
 > **Rule of thumb:** replace every `on:eventname` with `oneventname` (remove the colon). Everything else — transitions, `{#if}`, `{#each}`, `{#await}`, `bind:value`, `bind:this` — remains unchanged.
 
