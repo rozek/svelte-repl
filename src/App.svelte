@@ -15,8 +15,8 @@
 //----------------------------------------------------------------------------//
 
   const URLParams    = new URLSearchParams(window.location.search)
-  const Name         = URLParams.get('name')          ?? 'default-repl'
-  const BackupMarker = URLParams.get('backup-marker') ?? ''
+  const Name         = URLParams.get('name')
+  const BackupPrefix = URLParams.get('backup-prefix') ?? ''
   const CharLimit    = parseInt(URLParams.get('console-char-limit') ?? '10000',10)
   const LineLimit    = parseInt(URLParams.get('console-line-limit') ?? '500',  10)
 
@@ -61,16 +61,14 @@ ${'<'}/script>
 /**** BackupIsEnabled ****/
 
   function BackupIsEnabled ():boolean {
-    if (BackupMarker === '') { return false }
-    const MarkerValue = localStorage.getItem(BackupMarker)
-    return (MarkerValue != null) && (MarkerValue.trim() !== '')
+    return (BackupPrefix !== '') && (Name != null)
   }
 
 /**** restoredCode ****/
 
   function restoredCode ():string {
     if (! BackupIsEnabled()) { return initialCode }
-    const StorageKey = `svelte-repl-${Name}`
+    const StorageKey = `${BackupPrefix}-${Name as string}`
     const savedCode  = localStorage.getItem(StorageKey)
     if ((savedCode == null) || (savedCode.trim() === '')) { return initialCode }
     return savedCode
@@ -81,7 +79,7 @@ ${'<'}/script>
   function preserveCode (newCode:string):void {
     if (! BackupIsEnabled())       { return }
     if (newCode === lastSavedCode) { return }
-    const StorageKey = `svelte-repl-${Name}`
+    const StorageKey = `${BackupPrefix}-${Name as string}`
     if (newCode === '') {
       localStorage.removeItem(StorageKey)
     } else {
