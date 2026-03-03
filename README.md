@@ -56,6 +56,7 @@ The following Svelte packages are available in user code (all bundled into `svel
 - `backup-prefix` — prefix for the localStorage backup key; backup is disabled when empty
 - `console-char-limit` — maximum characters shown per console value; default: `10000`
 - `console-line-limit` — maximum number of console lines kept in the Console tab; default: `500`
+- `focus-on` — initial active tab; one of `code` (default), `preview`, or `console`; other values are ignored
 
 ### Encoding `initial-code`
 

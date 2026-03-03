@@ -20,6 +20,11 @@
   const CharLimit    = parseInt(URLParams.get('console-char-limit') ?? '10000',10)
   const LineLimit    = parseInt(URLParams.get('console-line-limit') ?? '500',  10)
 
+  const FocusOnParam = URLParams.get('focus-on')
+  const initialTab:  'code'|'preview'|'console' = (
+    FocusOnParam === 'preview' || FocusOnParam === 'console' ? FocusOnParam : 'code'
+  )
+
 //----------------------------------------------------------------------------//
 //                            Reactive State                                  //
 //----------------------------------------------------------------------------//
@@ -27,7 +32,7 @@
   let initialCode:    string                     = $state(DefaultCode())
   let Code:           string                     = $state(DefaultCode())
   let lastSavedCode:  string                     = $state(DefaultCode())
-  let activeTab:      'code'|'preview'|'console' = $state('code')
+  let activeTab:      'code'|'preview'|'console' = $state(initialTab)
   let ConsoleEntries: ConsoleEntry[]             = $state([])
   let EntryCounter   = 0
   let unreadCount:   number                      = $state(0)
@@ -47,9 +52,9 @@ ${'<'}/script>
 </style>`
   }
 
-/**** WPG_TextFromBase64URL ****/
+/**** TextFromBase64URL ****/
 
-  async function WPG_TextFromBase64URL (EncodedURL:string):Promise<string> {
+  async function TextFromBase64URL (EncodedURL:string):Promise<string> {
     const paddedURL          = EncodedURL + '=='.slice(0, (4 - EncodedURL.length % 4) % 4)
     const binaryURL          = atob(paddedURL.replace(/-/g, '+').replace(/_/g, '/'))
     const compressedBytes    = Uint8Array.from(binaryURL, (Char) => Char.charCodeAt(0))
@@ -91,11 +96,11 @@ ${'<'}/script>
 /**** addConsoleEntry ****/
 
   function addConsoleEntry (Level:ConsoleEntry['Level'], Args:unknown[]):void {
-    const Now  = new Date()
-    const Time = String(Now.getHours()).padStart(2, '0') + ':'
-               + String(Now.getMinutes()).padStart(2, '0') + ':'
-               + String(Now.getSeconds()).padStart(2, '0') + '.'
-               + String(Now.getMilliseconds()).padStart(3, '0')
+    const now  = new Date()
+    const Time = String(now.getHours()).padStart(2, '0') + ':'
+               + String(now.getMinutes()).padStart(2, '0') + ':'
+               + String(now.getSeconds()).padStart(2, '0') + '.'
+               + String(now.getMilliseconds()).padStart(3, '0')
 
     const Entry:ConsoleEntry = { Id:++EntryCounter, Level:Level, ArgList:Args, Time:Time }
 
@@ -152,7 +157,7 @@ ${'<'}/script>
 
     const rawParam = URLParams.get('initial-code')
     initialCode = rawParam
-      ? await WPG_TextFromBase64URL(rawParam)
+      ? await TextFromBase64URL(rawParam)
       : DefaultCode()
 
     Code          = restoredCode()
@@ -172,18 +177,18 @@ ${'<'}/script>
         class="tab-button"
         class:active={activeTab === 'code'}
         onclick={() => (activeTab = 'code')}
-      >📝 Code</button>
+      >Code</button>
       <button
         class="tab-button"
         class:active={activeTab === 'preview'}
         onclick={() => (activeTab = 'preview')}
-      >👁️ Preview</button>
+      >Preview</button>
       <button
         class="tab-button"
         class:active={activeTab === 'console'}
         onclick={() => (activeTab = 'console')}
       >
-        ⬛ Console
+        Console
         {#if unreadCount > 0}
           <span class="unread-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
         {/if}
